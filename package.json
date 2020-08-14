@@ -1,0 +1,24 @@
+{
+  "name": "buidler-etherscan-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/buidler.config.js",
+  "dependencies": {
+    "@nomiclabs/buidler": "^1.4.3",
+    "@nomiclabs/buidler-ethers": "^2.0.0",
+    "ethers": "^5.0.8"
+  },
+  "devDependencies": {
+    "@types/mocha": "^8.0.1",
+    "mocha": "^8.1.1",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7",
+    "web3": "^1.2.11"
+  },
+  "scripts": {
+    "watch": "tsc --build --watch ./tsconfig.json",
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "UNLICENSED"
+}

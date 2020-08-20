@@ -16,8 +16,7 @@ async function main() {
   const contractArtifact = compilerOutput.contracts[`contracts/solc-${major}.${minor}/${contractName}.sol`][contractName];
 
   const librarySlices = generateLibrarySlices(libraryAddress, contractArtifact.evm.bytecode.linkReferences);
-  const bytecode = Buffer.from(contractArtifact.evm.bytecode.object, "hex");
-  const linkedBytecode = "0x" + linkLibraries(bytecode, librarySlices).toString("hex");
+  const linkedBytecode = "0x" + linkLibraries(contractArtifact.evm.bytecode.object, librarySlices);
 
   const contractFactory = new ethers.ContractFactory(contractArtifact.abi, linkedBytecode, deployer);
   const contract = await contractFactory.deploy(...constructorArguments/*, { gasLimit: 6 * (10 ** 6) }*/);
@@ -39,29 +38,26 @@ async function main() {
 // Assumes there's only one library for this contract.
 export function generateLibrarySlices(address: string, linkReferences: CompilerOutputBytecode['linkReferences']) {
   const [files] = Object.values(linkReferences);
-  console.log(util.inspect(linkReferences, {depth: 5}));
   const [slices] = files ? Object.values(files) : [[]];
   const resolvedLinks = slices.map(({ start }) => {
     return { start, address };
   });
 
-  console.log(util.inspect(resolvedLinks));
-
   return resolvedLinks;
 }
 
 export function linkLibraries(
-  code: Buffer,
+  code: string,
   slices: Array<{ start: number; address: string }>
-): Buffer {
+): string {
   for (const { start, address } of slices) {
     if (!ethers.utils.isAddress(address)) throw new Error("Not an address!");
-    const addressBuffer = Buffer.from(address.slice(2), "hex");
-    code = Buffer.concat([
-      code.slice(0, start),
-      addressBuffer,
-      code.slice(start + addressBuffer.length),
-    ]);
+    const addressSlice = address.slice(2);
+    code = [
+      code.slice(0, start * 2),
+      addressSlice,
+      code.slice(start * 2 + addressSlice.length),
+    ].join("");
   }
 
   return code;
